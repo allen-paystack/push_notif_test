@@ -37,6 +37,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:18.0.0'
     implementation 'com.pusher:push-notifications-android:1.6.2'
 
+    implementation 'com.pusher:pusher-java-client:2.2.1'
     implementation 'me.pushy:sdk:1.0.56'
 
 }

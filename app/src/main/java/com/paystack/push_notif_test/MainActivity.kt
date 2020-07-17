@@ -7,8 +7,13 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.pusher.pushnotifications.PushNotifications
-import kotlinx.android.synthetic.main.activity_main.*
+import com.pusher.client.Pusher
+import com.pusher.client.PusherOptions
+import com.pusher.client.channel.PusherEvent
+import com.pusher.client.channel.SubscriptionEventListener
+import com.pusher.client.connection.ConnectionEventListener
+import com.pusher.client.connection.ConnectionState
+import com.pusher.client.connection.ConnectionStateChange
 import me.pushy.sdk.Pushy
 
 
@@ -18,8 +23,42 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        PushNotifications.start(this, "94b17157-3130-46a9-900c-20a9380c3887")
-        PushNotifications.addDeviceInterest("hello")
+        val options = PusherOptions()
+        options.setCluster("eu")
+
+        val pusher = Pusher("df133bc4c03d50d42f26", options)
+        pusher.connect()
+
+        pusher.connect(object : ConnectionEventListener {
+            override fun onConnectionStateChange(change: ConnectionStateChange) {
+                Log.i(
+                    "Pusher", "State changed from " + change.previousState +
+                            " to " + change.currentState
+                )
+            }
+
+            override fun onError(
+                message: String,
+                code: String,
+                e: java.lang.Exception
+            ) {
+                Log.i(
+                    "Pusher", """
+     There was a problem connecting! 
+     code: $code
+     message: $message
+     Exception: $e
+     """.trimIndent()
+                )
+            }
+        }, ConnectionState.ALL)
+
+        val channel = pusher.subscribe("my-channel")
+
+        channel.bind("my-event") { event ->
+            println(event?.data)
+            Log.i("Pusher", "Received event with data: $event");
+        }
 
         Pushy.listen(this)
 
